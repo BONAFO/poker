@@ -214,13 +214,13 @@ const pairs = (hand_value, repeats, have_same_family) => {
 };
 
 const evaluate_hand = (hand) => {
-    // hand = [
-    //     { value: 6, family: "diamont", indeck: false, color: "red" },
-    //     { value: 1, family: "diamont", indeck: false, color: "red" },
-    //     { value: 13, family: "clover", indeck: false, color: "black" },
-    //     { value: 11, family: "spade", indeck: false, color: "black" },
-    //     { value: 10, family: "diamont", indeck: false, color: "red" },
-    // ];
+    hand = [
+        { value: 6, family: "diamont", indeck: false, color: "red" },
+        { value: 6, family: "diamont", indeck: false, color: "red" },
+        { value: 13, family: "spade", indeck: false, color: "black" },
+        { value: 8, family: "diamont", indeck: false, color: "black" },
+        { value: 10, family: "spade", indeck: false, color: "red" },
+    ];
 
     hand.sort((a, b) => b.value - a.value);
 
@@ -294,7 +294,18 @@ const evaluate_hand = (hand) => {
 const determinate_straight_scale = (hand, flush_posibility) => {
     let straight_posibility = [];
 
-    hand.map((card) => {
+    let hand_aux = [];
+    hand.map(card=> {
+        
+        if(hand_aux.filter(ca=> ca.value == card.value)[0] == undefined){
+            hand_aux.push(card)
+        }
+        
+    })
+
+
+    hand_aux.map((card) => {
+   
         const up_scale = [];
         const down_scale = [];
         for (let i = 1; i <= 4; i++) {
@@ -319,7 +330,7 @@ const determinate_straight_scale = (hand, flush_posibility) => {
             down: 0,
         };
 
-        hand.map((card, i) => {
+        hand_aux.map((card, i) => {
             card = card.value;
 
             if (up_scale.indexOf(card) != -1) {
@@ -378,6 +389,7 @@ const process_hand = (hand_value, hand) => {
     // console.log(hand_value);
 
     let cards_discard = [];
+    let desided = false;
     cards_discard = cards_discard.concat(hand);
     cards_discard = cards_discard.map((card) => {
         card.discard = 0;
@@ -407,10 +419,84 @@ const process_hand = (hand_value, hand) => {
         }
     })
 
+    
+    if(scale_selected.posi >= 4){
+        desided = true;
+    }
     // EVALUANDO ESCALERAS
 
-    console.log(cards_discard);
 
+
+// EVALUANDO COLOR
+let family_probability = {family : "", prob : -1};
+
+    if(!desided){
+        if(Object.keys(hand_value.family).length == 1){
+            cards_discard = cards_discard.map(card => {
+                card.discard = 0
+                return card
+            })
+            family_probability.family= Object.keys(hand_value.family)[0];
+            family_probability.prob= hand_value.family[family_probability.family];
+             
+        }else{
+            const families = Object.keys(hand_value.family);
+
+            
+            families.map(family => {
+                if(family_probability.prob < hand_value.family[family]){
+                    family_probability = {
+                        family :family, prob : hand_value.family[family]
+                    };
+                    if(hand_value.family[family] >= 4){
+                   
+                        desided = true; 
+                    }
+                }
+            })   
+                    
+            cards_discard =  cards_discard.map(card => {
+                if(card.family != family_probability.family){
+                        if(hand_value.family[family_probability.family] >= 4){
+                            card.discard += 2;
+                        }else{
+                            card.discard++;
+                        }
+                }
+                return card
+            })
+        }
+    }
+
+
+
+
+
+
+
+  // EVALUANDO COLOR
+  
+    
+//     if(Object.keys(hand_value.family).length == 1){
+//         cards_discard.map(card => {
+//             card.discard =0;
+//             return card
+//         })
+//     }else{
+
+//     }
+
+//   console.log(ca);
+
+
+let pair_probability = 0;
+
+if(!desided && hand_value.repeat.length != 0){
+}
+
+    console.log(desided);
+//   console.log(cards_discard);
+  // console.log(family_probability);
 };
 
 shuffle_deck();
